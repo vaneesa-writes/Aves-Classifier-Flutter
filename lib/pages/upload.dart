@@ -1,9 +1,14 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:tflite/tflite.dart';
 import 'package:studioproject1/pages/auth_page.dart';
+import 'package:tflite/tflite.dart';
+
+import 'classifiedBirdName.dart';
+
 class uploadimage extends StatefulWidget {
   const uploadimage({Key? key}) : super(key: key);
   @override
@@ -16,8 +21,8 @@ class _uploadimageState extends State<uploadimage> {
 
   bool _loading = false;
   bool _loading2 = false;
-  List ? _outputs;
-  List ? _outputs2;
+  List? _outputs;
+  List? _outputs2;
 
   @override
   void initState() {
@@ -39,7 +44,8 @@ class _uploadimageState extends State<uploadimage> {
     // });
   }
 
-
+  bool _showImage = false;
+  String _textToDispaly = 'Pick an Image';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,10 +60,12 @@ class _uploadimageState extends State<uploadimage> {
             child: Icon(Icons.camera_alt_outlined),
             label: "Camera",
             onTap: () async {
-              var image = ((await picker.pickImage(
-                  source: ImageSource.camera)))!;
+              var image =
+                  ((await picker.pickImage(source: ImageSource.camera)))!;
               setState(() {
                 imagefile = File(image.path);
+                _showImage = true;
+                _textToDispaly = "Your Picked Image";
               });
               classifyImage(imagefile!);
               //  classifyImage2(imagefile!);
@@ -67,82 +75,88 @@ class _uploadimageState extends State<uploadimage> {
             child: Icon(Icons.browse_gallery_outlined),
             label: "Gallery",
             onTap: () async {
-              var image = ((await picker.pickImage(
-                  source: ImageSource.gallery)))!;
+              var image =
+                  ((await picker.pickImage(source: ImageSource.gallery)))!;
               setState(() {
                 imagefile = File(image.path);
+                _showImage = true;
+                _textToDispaly = "Your Picked Image";
               });
               classifyImage(imagefile!);
+
               //  classifyImage2(imagefile!);
             },
           )
         ],
       ),
-      appBar: AppBar(backgroundColor: Colors.black,
-          title: Text(
-            "Bird-Classification", style: TextStyle(color: Colors.white),),
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(
+          "Bird-Classification",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: <Widget>[
-        IconButton(
-        icon: Icon(Icons.logout,
-        color: Colors.white,
+          IconButton(
+            icon: Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              authorizationpage.instance.Logout();
+            },
+          )
+        ],
       ),
-      onPressed: () {
-       authorizationpage.instance.Logout();
-      },
-    )
-    ],
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(height: MediaQuery.of(context).size.height * 0.1,),
-            Text("Your Picked Image",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02,),
-            Container(
-              height: MediaQuery.of(context).size.height * 0.33,
-              width: MediaQuery.of(context).size.width * 0.8,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black45, width: 3.0),
-                image: DecorationImage(
-                    fit: BoxFit.fill,
-                    image: (imagefile != null)
-                        ? FileImage(imagefile!)
-                        : AssetImage("assets/images/whitebackground.jpg") as ImageProvider
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage("assets/images/forest.jpg"), fit: BoxFit.cover),
+        ),
+        child: Center(
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _textToDispaly,
+                style: TextStyle(
+                  fontSize: 38,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.yellowAccent,
                 ),
               ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height*0.05,),
-            if (_outputs != null )
-              Center(
-                child: Text((_outputs?.length != 0 ? "${(_outputs![0]["label"])
-                    .toString().toUpperCase()}\n"+ "\t Accuracy:${(_outputs![0]["confidence"] *
-                    100).toStringAsFixed(2).toUpperCase()} " : "SORRY BIRD NOT FOUND" ),
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24.0, fontWeight: FontWeight.bold,
-                    )
+              Visibility(
+                visible: _showImage,
+                child: Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.black45, width: 3.0),
+                      image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: (imagefile != null)
+                              ? FileImage(imagefile!)
+                              : AssetImage("assets/images/whitebackground.jpg")
+                                  as ImageProvider),
+                    ),
+                  ),
                 ),
-              )
-            else
-              Container(),
-            // RaisedButton(onPressed: onPressed
-            // )
-            // _outputs != null
-            //     ? Container(
-            //   padding: EdgeInsets.only(top: 50),
-            //   child: Text(
-            //     "${_outputs![0]['label'].toString().toLowerCase()}",
-            //     style: TextStyle(
-            //       color: Colors.black,
-            //       fontSize: 24.0,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // )
-            //     : Container()
-          ],
+              ),
+              if (_outputs != null)
+                Center(
+                  child: Text(
+                      (_outputs?.length != 0
+                          ? "${(_outputs![0]["label"]).toString().toUpperCase()}\n" +
+                              "\t Accuracy:${(_outputs![0]["confidence"] * 100).toStringAsFixed(2).toUpperCase()} "
+                          : "SORRY BIRD NOT FOUND"),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -159,7 +173,11 @@ class _uploadimageState extends State<uploadimage> {
     setState(() {
       _loading = false;
       _outputs = output;
-      print(output);
+      if (_outputs != null) {
+        birdName = (_outputs![0]["label"]).toString();
+        log(birdName);
+      }
+      // log('${_outputs.runtimeType}');
     });
   }
 
@@ -169,27 +187,6 @@ class _uploadimageState extends State<uploadimage> {
       labels: "assets/label_3.txt",
     );
   }
-// classifyImage2(File image) async {
-//   var output2 = await Tflite.runModelOnImage(
-//     path: image.path,
-//     numResults: 400,
-//     threshold: 0.5,
-//     imageMean: 127.5,
-//     imageStd: 127.5,
-//   );
-//   setState(()  {
-//     _loading2 = false;
-//     _outputs2 = output2!;
-//     print(output2);
-//   });
-// }
-// loadModel2() async {
-//   await Tflite.loadModel(
-//     model: "assets/fullmodel_2.tflite",
-//     labels: "assets/labels_2.txt",
-//   );
-// }
-
 
   @override
   void dispose() {

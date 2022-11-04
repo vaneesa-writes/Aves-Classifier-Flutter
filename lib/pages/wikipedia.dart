@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
-import 'package:studioproject1/pages/upload.dart';
+
+import 'package:flutter/material.dart';
+import 'package:studioproject1/pages/classifiedBirdName.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(MaterialApp(home: WikipediaExplorer()));
 
@@ -28,13 +29,12 @@ class _WikipediaExplorerState extends State<WikipediaExplorer> {
         ],
       ),
       body: WebView(
-        initialUrl: 'https://en.wikipedia.org/wiki/',
+        initialUrl: 'https://en.wikipedia.org/wiki/' + birdName,
         //"${(_outputs![0]["label"]).toString().toUpperCase()}\n"
         onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },
       ),
-
     );
   }
 }
@@ -71,8 +71,6 @@ class Menu extends StatelessWidget {
     );
   }
 }
-
-
 
 class NavigationControls extends StatelessWidget {
   const NavigationControls(this._webViewControllerFuture)
@@ -112,14 +110,9 @@ class NavigationControls extends StatelessWidget {
   navigate(BuildContext context, WebViewController controller,
       {bool goBack: false}) async {
     bool canNavigate =
-    goBack ? await controller.canGoBack() : await controller.canGoForward();
+        goBack ? await controller.canGoBack() : await controller.canGoForward();
     if (canNavigate) {
       goBack ? controller.goBack() : controller.goForward();
-    } else {
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-            content: Text("No ${goBack ? 'back' : 'forward'} history item")),
-      );
     }
   }
 }
